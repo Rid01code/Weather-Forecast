@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Forecast App</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Custom theme (colors, fonts)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        skyblue: '#4DA8DA',
+                        sunset: '#FF6E6C',
+                        mint: '#52D8B0',
+                        white: '#FFFFFF',
+                        smokeWhite: '#F5F5F5',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gradient-to-br from-skyblue to-sunset min-h-screen flex items-center justify-center p-4">
+    <div id="app" class="rounded-2xl shadow-2xl p-6 w-full animate-fade-in">
+        <!-- Header -->
+        <h1 class="text-3xl font-bold text-center text-sunset mb-4">Weather<span class="text-skyblue">App</span></h1>
+        <!-- Search & Controls -->
+        <div class="flex items-center justify-center space-x-2 mb-4">
+            <input id="cityInput" type="text" placeholder="Enter city name"
+                class=" p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-mint transition w-96" />
+            <button id="searchBtn"
+                class="px-4 py-2 bg-mint text-white rounded-lg hover:bg-mint/90 transition transform hover:scale-105">
+                Search
+            </button>
+            <button id="locBtn" title="Use current location"
+                class="p-2 bg-skyblue text-white rounded-full hover:bg-sunset/90 transition transform hover:scale-110">
+                📍
+            </button>
+        </div>
+        <!-- Recent Searches Dropdown -->
+        <div class="flex items-center justify-center"><select id="recentDropdown" class="p-2 mb-4 border rounded-lg w-96" hidden></select></div>
+        <!-- Current Weather -->
+        <div id="currentWeather" class="text-center space-y-2 opacity-0 transition-opacity duration-500">
+            <p id="currentDate" class="text-lg font-medium text-gray-600"></p>
+            <p id="cityName" class="text-xl font-semibold"></p>
+            <img id="weatherIcon" src="" alt="" class="mx-auto w-20 h-20" />
+            <p id="description" class="capitalize"></p>
+            <p><span id="temp" class="text-4xl font-bold"></span>°C</p>
+            <div class="flex justify-center items-center gap-4">
+                <p>💧 <span id="humidity"></span>%</p>
+                <p>💨 <span id="wind"></span> m/s</p>
+            </div>
+        </div>
+        <!-- Extended Forecast -->
+        <div id="forecast" class="mt-8 flex flex-wrap justify-center gap-4 w-full opacity-0 transition-opacity duration-500"></div>
+        <!-- Error Message -->
+        <p id="error" class="text-red-500 mt-4 text-center"></p>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
