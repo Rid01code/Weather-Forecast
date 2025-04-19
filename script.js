@@ -1,4 +1,4 @@
-// Replace with your own OpenWeatherMap API key
+
 const API_KEY = 'e9416e0f19179f9e97cf7c309c53f921';
 
 const cityInput = document.getElementById('cityInput');
@@ -8,18 +8,34 @@ const recentDropdown = document.getElementById('recentDropdown');
 const currentWeather = document.getElementById('currentWeather');
 const forecastEl = document.getElementById('forecast');
 const errorEl = document.getElementById('error');
+const loader = document.getElementById('loader');
 
 // Load recent cities from localStorage
 let recentCities = JSON.parse(localStorage.getItem('recentCities') || '[]');
 updateDropdown();
 
+// Show the loader
+function showLoader() {
+    loader.classList.add('active');
+}
+
+// Hide the loader after 1 second
+function hideLoader() {
+    setTimeout(() => {
+        loader.classList.remove('active');
+    }, 1000);
+}
+
+// Event listeners
 searchBtn.addEventListener('click', () => fetchWeatherByCity(cityInput.value.trim()));
 locBtn.addEventListener('click', fetchWeatherByLocation);
 recentDropdown.addEventListener('change', () => fetchWeatherByCity(recentDropdown.value));
 
+// Fetch weather by city
 async function fetchWeatherByCity(city) {
     if (!city) return showError('Please enter a city name.');
     clearError();
+    showLoader(); // Show loader
     try {
         const [current, forecast] = await Promise.all([
             fetchCurrent(city),
@@ -30,11 +46,15 @@ async function fetchWeatherByCity(city) {
         saveRecent(city);
     } catch (e) {
         showError(e.message);
+    } finally {
+        hideLoader(); // Hide loader
     }
 }
 
+// Fetch weather by location
 async function fetchWeatherByLocation() {
     if (!navigator.geolocation) return showError('Geolocation not supported.');
+    showLoader(); // Show loader
     navigator.geolocation.getCurrentPosition(async ({ coords }) => {
         clearError();
         try {
@@ -43,48 +63,43 @@ async function fetchWeatherByLocation() {
             fetchWeatherByCity(name);
         } catch (e) {
             showError('Unable to get location name.');
+        } finally {
+            hideLoader(); // Hide loader
         }
-    }, () => showError('Permission denied.'));
+    }, () => {
+        showError('Permission denied.');
+        hideLoader(); // Hide loader
+    });
 }
 
+// Fetch current weather data
 function fetchCurrent(query) {
     return fetch(`https://api.openweathermap.org/data/2.5/weather?q=${query}&units=metric&appid=${API_KEY}`)
         .then(res => res.ok ? res.json() : Promise.reject(new Error('City not found.')));
 }
 
+// Fetch forecast data
 function fetchForecast(query) {
     return fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${query}&units=metric&appid=${API_KEY}`)
         .then(res => res.ok ? res.json() : Promise.reject(new Error('Forecast not available.')));
 }
 
+// Display current weather
 function displayCurrent(data) {
-    // Get the current date and format it with the day
     const currentDate = new Date().toLocaleDateString(undefined, {
-        weekday: 'long', // Full day name (e.g., Monday)
+        weekday: 'long',
         year: 'numeric',
-        month: 'long', // Full month name (e.g., January)
-        day: 'numeric' // Day of the month
+        month: 'long',
+        day: 'numeric'
     });
 
-    // Update the city name and country
     document.getElementById('cityName').textContent = `${data.name}, ${data.sys.country}`;
-
-    // Update the weather icon
     document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-
-    // Update the weather description
     document.getElementById('description').textContent = data.weather[0].description;
-
-    // Update the temperature
     document.getElementById('temp').textContent = Math.round(data.main.temp);
-
-    // Update the humidity
     document.getElementById('humidity').textContent = data.main.humidity;
-
-    // Update the wind speed
     document.getElementById('wind').textContent = data.wind.speed;
 
-    // Update the current date and day
     const dateEl = document.getElementById('currentDate');
     if (dateEl) {
         dateEl.textContent = currentDate;
@@ -93,15 +108,14 @@ function displayCurrent(data) {
         newDateEl.id = 'currentDate';
         newDateEl.className = 'text-lg font-medium text-gray-600';
         newDateEl.textContent = currentDate;
-        currentWeather.prepend(newDateEl); // Add the date at the top of the current weather section
+        currentWeather.prepend(newDateEl);
     }
 
-    // Make the current weather section visible
     currentWeather.classList.add('opacity-100');
 }
 
+// Display forecast
 function displayForecast(data) {
-    // Group by date, take one entry per day at 12:00
     const daily = {};
     data.list.forEach(item => {
         if (item.dt_txt.includes('12:00:00')) {
@@ -125,14 +139,17 @@ function displayForecast(data) {
     forecastEl.classList.add('opacity-100');
 }
 
+// Show error message
 function showError(msg) {
     errorEl.textContent = msg;
 }
 
+// Clear error message
 function clearError() {
     errorEl.textContent = '';
 }
 
+// Save recent searches
 function saveRecent(city) {
     if (!recentCities.includes(city)) {
         recentCities.unshift(city);
@@ -142,6 +159,7 @@ function saveRecent(city) {
     }
 }
 
+// Update recent searches dropdown
 function updateDropdown() {
     if (recentCities.length) {
         recentDropdown.hidden = false;
